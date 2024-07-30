@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { UserStatus, ROLES, SALT_FACTOR } from '../users.const';
+import { UserStatus, ROLES, SALT_FACTOR, Gender } from '../users.const';
 import { hasPassword } from 'src/common/utils';
 
 export const UsersSchema = new mongoose.Schema(
@@ -18,10 +18,7 @@ export const UsersSchema = new mongoose.Schema(
     },
     phone: String,
     address: String,
-    birthday: {
-      required: true,
-      type: String,
-    },
+    birthday: String,
     height: Number,
     weight: Number,
     threeRounds: {
@@ -29,14 +26,15 @@ export const UsersSchema = new mongoose.Schema(
       waist: Number,
       hips: Number,
     },
-    roles: {
+    role: {
       required: true,
       type: String,
       default: ROLES.USER,
     },
     gender: {
-      type: Number, // 1 = male - 2 = female - 0 = unknown
-      default: 0,
+      type: Number,
+      enum: Gender,
+      default: Gender.UNKNOWN,
     },
     status: {
       type: String,
@@ -50,13 +48,14 @@ export const UsersSchema = new mongoose.Schema(
     gallery: [String],
     avatar: String,
 
-    createdAt: Number,
-    updatedAt: Number,
-    deletedAt: Number,
     isVerified: {
       type: Boolean,
       default: false,
     },
+
+    createdAt: Number,
+    updatedAt: Number,
+    deletedAt: Number,
     isDeleted: { type: Boolean, default: false },
   },
   {

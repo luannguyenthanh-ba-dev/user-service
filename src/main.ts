@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 dotenv.config(); // Read base environment (.env) from root
 
@@ -16,12 +16,13 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api');
   const PORT = process.env.PORT || 3000;
+  // Use this pipe for handle validation input error at DTO - If not have custom pipe
+  app.useGlobalPipes(new ValidationPipe());
   await app.listen(PORT, () =>
     logger.debug(`Service is listening on Port: ${PORT}`),
   );
   logger.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
-

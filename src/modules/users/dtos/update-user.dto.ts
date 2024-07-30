@@ -1,19 +1,16 @@
 import {
   IsDefined,
-  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsPhoneNumber,
   IsString,
-  Matches,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
 import { Gender } from '../users.const';
 
-export class RegisterUserDto {
+export class UpdateUserDto {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
@@ -23,11 +20,6 @@ export class RegisterUserDto {
   @IsNotEmpty()
   @IsString()
   lastName: string;
-
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
 
   @IsOptional()
   @IsPhoneNumber('VN')
@@ -41,20 +33,27 @@ export class RegisterUserDto {
   @IsOptional()
   birthday?: string;
 
+  @IsNumber()
+  @IsOptional()
+  height?: number;
+
+  @IsNumber()
+  @IsOptional()
+  weight?: number;
+
+  @IsOptional()
+  @IsObject()
+  threeRounds?: {
+    bust?: number;
+    waist?: number;
+    hips?: number;
+  };
+
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
 
-  @IsDefined()
-  @IsNotEmpty()
-  @MaxLength(24)
-  @MinLength(8)
-  @Matches(
-    /^(?=.*[A-Z])(?=.*[a-z])(?=.*[a-zA-Z!#$%&? "])[a-zA-Z0-9!#@$%&?]{8,24}$/,
-  )
-  password: string;
-
-  @IsString()
+  @IsNumber()
   @IsOptional()
   major?: string;
 }
