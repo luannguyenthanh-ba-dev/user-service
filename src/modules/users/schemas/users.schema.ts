@@ -15,6 +15,7 @@ export const UsersSchema = new mongoose.Schema(
     email: {
       required: true,
       type: String,
+      unique: true,
     },
     phone: String,
     address: String,

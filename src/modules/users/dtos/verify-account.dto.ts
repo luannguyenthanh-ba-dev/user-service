@@ -1,9 +1,16 @@
-import { IsDefined, IsEmail, IsNotEmpty, IsNumberString } from 'class-validator';
+import {
+  IsDefined,
+  IsEmail,
+  IsNotEmpty,
+  IsNumberString,
+  Length,
+} from 'class-validator';
 
 export class VerifyAccountDto {
   @IsNumberString()
   @IsDefined()
   @IsNotEmpty()
+  @Length(6)
   code: string;
 
   @IsEmail()

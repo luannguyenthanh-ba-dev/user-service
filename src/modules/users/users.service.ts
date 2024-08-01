@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Gender, USERS_SCHEMA_TOKEN } from './users.const';
+import {
+  Gender,
+  USERS_SCHEMA_TOKEN,
+  VERIFY_CODE_SCHEMA_TOKEN,
+} from './users.const';
 import { Model, Types } from 'mongoose';
 import { IUserModel } from './interfaces/users.model.interface';
 import { IUserFilters } from './interfaces/users.interface';
+import { IVerificationsModel } from './interfaces/verifications.model';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(USERS_SCHEMA_TOKEN)
     private readonly usersModel: Model<IUserModel>,
+    @InjectModel(VERIFY_CODE_SCHEMA_TOKEN)
+    private readonly verificationsModel: Model<IVerificationsModel>,
   ) {}
 
   async create(data: {
@@ -73,5 +80,43 @@ export class UsersService {
     }
     const user = await this.usersModel.findOne(conditions).select('-password');
     return user;
+  }
+
+  async generateVerifyCode(data: {
+    userId: string | Types.ObjectId;
+    email: string;
+  }) {
+    const verifyCode = await this.verificationsModel.findOneAndUpdate(
+      { email: data.email },
+      data,
+      { new: true, upsert: true },
+    );
+    return verifyCode;
+  }
+
+  async findOneVerify(filters: {
+    _id?: string | Types.ObjectId;
+    email?: string;
+    userId?: string | Types.ObjectId;
+    verifyCode?: string;
+  }) {
+    const verifyCode = await this.verificationsModel.findOne({
+      ...filters,
+      createdAt: {
+        $gte: Math.floor(Date.now() / 1000) - 15 * 60,
+      },
+    });
+    return verifyCode;
+  }
+
+  async updateOne(
+    filters: { _id?: string | Types.ObjectId; email?: string },
+    data,
+  ) {
+    const updatedUser = await this.usersModel.findOneAndUpdate(filters, data, {
+      new: true,
+    });
+
+    return updatedUser;
   }
 }
