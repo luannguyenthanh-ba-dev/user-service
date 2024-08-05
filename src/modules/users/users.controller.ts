@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   NotAcceptableException,
   NotFoundException,
@@ -13,8 +14,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto, RenewVerifyCodeDto, VerifyAccountDto } from './dtos';
-import { res } from 'src/common/utils';
-import { UserStatus } from './users.const';
+import { res, UserStatus } from 'src/common/utils';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { User } from '../auth/auth.decorator';
 
 @Controller('v1/users')
 export class UsersController {
@@ -99,7 +101,13 @@ export class UsersController {
     return res(HttpStatus.CREATED, { status: 'Success' });
   }
 
-  @UseGuards()
+  @UseGuards(AuthGuard)
+  @Get('profiles')
+  async profiles(@User() user) {
+    return res(HttpStatus.OK, user);
+  }
+
+  @UseGuards(AuthGuard)
   @Put(':_id')
   async updateUser(
     @Param('_id') _id: string,

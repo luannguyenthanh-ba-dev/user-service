@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import { UserStatus, ROLES, SALT_FACTOR, Gender } from '../users.const';
-import { hasPassword } from 'src/common/utils';
+import { SALT_FACTOR, Gender } from '../users.const';
+import { hasPassword, ROLES, UserStatus } from 'src/common/utils';
 
 export const UsersSchema = new mongoose.Schema(
   {

@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { Gender, ROLES, UserStatus } from "../users.const";
+import { ROLES, UserStatus } from "src/common/utils";
 
 export interface IUserFilters {
   _id?: string | Types.ObjectId;

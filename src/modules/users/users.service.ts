@@ -38,9 +38,10 @@ export class UsersService {
   /**
    * Find a user with filters
    * @param filters Object
+   * @param select string - Select fields or exclude some data
    * @returns user
    */
-  async findOne(filters: IUserFilters) {
+  async findOne(filters: IUserFilters, select = '') {
     const conditions: any = {};
     if (filters._id) {
       conditions._id = filters._id;
@@ -78,7 +79,12 @@ export class UsersService {
     if (filters.isDeleted) {
       conditions.isDeleted = filters.isDeleted;
     }
-    const user = await this.usersModel.findOne(conditions).select('-password');
+
+    let query = this.usersModel.findOne(conditions);
+    if (select.length) {
+      query = query.select(select);
+    }
+    const user = await query;
     return user;
   }
 

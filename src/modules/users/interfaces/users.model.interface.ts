@@ -1,5 +1,6 @@
 import { Document, Types } from 'mongoose';
-import { Gender, ROLES, UserStatus } from '../users.const';
+import { Gender } from '../users.const';
+import { ROLES, UserStatus } from 'src/common/utils';
 
 /**
  * The common interface FAndModel - Must exactly equal to FAndModel. Field use camelCase. Extend Document for use when query!

@@ -3,7 +3,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -45,6 +44,7 @@ export class RegisterUserDto {
   @IsEnum(Gender)
   gender?: Gender;
 
+  @IsString()
   @IsDefined()
   @IsNotEmpty()
   @MaxLength(24)
