@@ -76,7 +76,7 @@ export class UsersService {
     if (filters.to_time) {
       conditions.createdAt = { $lte: filters.to_time };
     }
-    if (filters.isDeleted) {
+    if (filters.isDeleted || filters.isDeleted === false) {
       conditions.isDeleted = filters.isDeleted;
     }
 
@@ -124,5 +124,73 @@ export class UsersService {
     });
 
     return updatedUser;
+  }
+
+  async deleteOne(filters: { _id?: string | Types.ObjectId; email?: string }) {
+    const deleted = await this.usersModel.findOneAndUpdate(
+      filters,
+      {
+        isDeleted: true,
+        deletedAt: Math.floor(Date.now() / 1000),
+      },
+      {
+        new: true,
+      },
+    );
+
+    return deleted;
+  }
+
+  /**
+   * Find a user with filters
+   * @param filters Object
+   * @param select string - Select fields or exclude some data
+   * @returns user
+   */
+  async findMany(filters: IUserFilters, select = '') {
+    const conditions: any = {};
+    if (filters._id) {
+      conditions._id = filters._id;
+    }
+    if (filters.name) {
+      conditions.$or = [
+        { firstName: { $regex: filters.name, $options: 'i' } },
+        { lastName: { $regex: filters.name, $options: 'i' } },
+      ];
+    }
+    if (filters.email) {
+      conditions.email = filters.email;
+    }
+    if (filters.phone) {
+      conditions.phone = filters.phone;
+    }
+    if (filters.address) {
+      conditions.address = filters.address;
+    }
+    if (filters.role) {
+      conditions.role = filters.role;
+    }
+    if (filters.status) {
+      conditions.status = filters.status;
+    }
+    if (filters.isVerified) {
+      conditions.isVerified = filters.isVerified;
+    }
+    if (filters.from_time) {
+      conditions.createdAt = { $gte: filters.from_time };
+    }
+    if (filters.to_time) {
+      conditions.createdAt = { $lte: filters.to_time };
+    }
+    if (filters.isDeleted || filters.isDeleted === false) {
+      conditions.isDeleted = filters.isDeleted;
+    }
+
+    let query = this.usersModel.find(conditions);
+    if (select.length) {
+      query = query.select(select);
+    }
+    const user = await query;
+    return user;
   }
 }

@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JWT_AUTH_SECRET } from './auth.const';
 import { UsersService } from '../users/users.service';
-import { UserStatus } from 'src/common/utils';
+import { IUserPayload, UserStatus } from 'src/common/utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: IUserPayload) {
     const user = await this.usersService.findOne({
       _id: payload._id,
       isDeleted: false,
@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
     this.logger.log('Authenticated user!', payload.email);
     return {
-      sub: payload._id,
+      sub: payload?._id,
       _id: payload?._id,
       firstName: payload?.firstName,
       lastName: payload?.lastName,

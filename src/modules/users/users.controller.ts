@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  ForbiddenException,
   Get,
   HttpStatus,
   NotAcceptableException,
@@ -9,14 +11,24 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { RegisterUserDto, RenewVerifyCodeDto, VerifyAccountDto } from './dtos';
-import { res, UserStatus } from 'src/common/utils';
+import {
+  ChangeUserStatusDto,
+  GetListUsersDto,
+  RegisterUserDto,
+  RenewVerifyCodeDto,
+  UpdateUserDto,
+  VerifyAccountDto,
+} from './dtos';
+import { IUserPayload, res, ROLES, UserStatus } from 'src/common/utils';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { User } from '../auth/auth.decorator';
+import { Auth, User } from '../auth/auth.decorator';
 
 @Controller('v1/users')
 export class UsersController {
@@ -107,13 +119,96 @@ export class UsersController {
     return res(HttpStatus.OK, user);
   }
 
-  @UseGuards(AuthGuard)
-  @Put(':_id')
+  @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
+  /**
+   * To utilize the class-validator decorators, we need to use the ValidationPipe.
+   * Additionally, to utilize the class-transformer decorators, we need to use ValidationPipe with its transform: true flag
+   */
+  @UsePipes(new ValidationPipe({ transform: true }))
+  @Get()
+  async getListUsers(@Query() filters: GetListUsersDto) {
+    const users = await this.usersService.findMany(
+      { ...filters, isDeleted: false },
+      '-password',
+    );
+    return res(HttpStatus.OK, users);
+  }
+
+  @Auth(ROLES.USER, ROLES.ADMIN, ROLES.SUPER_ADMIN)
+  @Put('infos/:_id')
   async updateUser(
     @Param('_id') _id: string,
-    @Body() data: RegisterUserDto,
-    @Req() req: any,
+    @Body() data: UpdateUserDto,
+    @User() user: IUserPayload,
   ) {
-    return res(HttpStatus.CREATED, {});
+    if (
+      user.role !== ROLES.ADMIN &&
+      user.role !== ROLES.SUPER_ADMIN &&
+      _id !== user._id
+    ) {
+      throw new ForbiddenException(
+        'ERROR: Not have permission to update this user info!',
+      );
+    }
+
+    const existUser = await this.usersService.findOne({
+      _id,
+      isDeleted: false,
+    });
+    if (!existUser) {
+      throw new NotFoundException('ERROR: Not found this user to update info!');
+    }
+
+    const updated = await this.usersService.updateOne({ _id }, data);
+    return res(HttpStatus.OK, updated);
+  }
+
+  @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
+  @Put('status/:_id')
+  async changeUserStatus(
+    @Param('_id') _id: string,
+    @Body() data: ChangeUserStatusDto,
+  ) {
+    const existUser = await this.usersService.findOne({
+      _id,
+      isDeleted: false,
+    });
+    if (!existUser) {
+      throw new NotFoundException('ERROR: Not found this user to block!');
+    }
+    if (
+      data.status === UserStatus.BLOCKED &&
+      existUser.status === UserStatus.BLOCKED
+    ) {
+      throw new NotImplementedException('ERORR: User was blocked!');
+    }
+    if (
+      data.status === UserStatus.ACTIVE &&
+      existUser.status === UserStatus.ACTIVE
+    ) {
+      throw new NotImplementedException('ERROR: User already actived!');
+    }
+
+    const blocked = await this.usersService.updateOne(
+      { _id },
+      { status: data.status },
+    );
+    return res(HttpStatus.OK, blocked);
+  }
+
+  @Auth(ROLES.SUPER_ADMIN)
+  @Delete(':_id')
+  async deleteUser(@Param('_id') _id: string) {
+    const existUser = await this.usersService.findOne({
+      _id,
+      isDeleted: false,
+    });
+    console.log(existUser);
+    if (!existUser) {
+      throw new NotFoundException('ERROR: Not found this user to delete!');
+    }
+
+    const deleted = await this.usersService.deleteOne({ _id });
+    return res(HttpStatus.OK, deleted);
   }
 }

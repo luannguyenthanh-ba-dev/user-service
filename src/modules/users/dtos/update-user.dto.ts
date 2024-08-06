@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsDefined,
   IsEnum,
   IsNotEmpty,
@@ -53,7 +54,15 @@ export class UpdateUserDto {
   @IsEnum(Gender)
   gender?: Gender;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
   major?: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @IsArray()
+  @IsOptional()
+  gallery?: string[];
 }
