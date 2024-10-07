@@ -12,7 +12,6 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -29,11 +28,26 @@ import {
 import { IUserPayload, res, ROLES, UserStatus } from 'src/common/utils';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { Auth, User } from '../auth/auth.decorator';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('v1/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({
+    summary: 'Register User',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Success!',
+    type: Object,
+  })
   @Post('registrations')
   async register(@Body() data: RegisterUserDto) {
     const existedEmail = await this.usersService.findOne({ email: data.email });
@@ -113,12 +127,14 @@ export class UsersController {
     return res(HttpStatus.CREATED, { status: 'Success' });
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('profiles')
   async profiles(@User() user) {
     return res(HttpStatus.OK, user);
   }
 
+  @ApiBearerAuth()
   @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
   /**
    * To utilize the class-validator decorators, we need to use the ValidationPipe.
@@ -134,6 +150,7 @@ export class UsersController {
     return res(HttpStatus.OK, users);
   }
 
+  @ApiBearerAuth()
   @Auth(ROLES.USER, ROLES.ADMIN, ROLES.SUPER_ADMIN)
   @Put('infos/:_id')
   async updateUser(
@@ -163,6 +180,7 @@ export class UsersController {
     return res(HttpStatus.OK, updated);
   }
 
+  @ApiBearerAuth()
   @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
   @Put('status/:_id')
   async changeUserStatus(
@@ -196,6 +214,7 @@ export class UsersController {
     return res(HttpStatus.OK, blocked);
   }
 
+  @ApiBearerAuth()
   @Auth(ROLES.SUPER_ADMIN)
   @Delete(':_id')
   async deleteUser(@Param('_id') _id: string) {

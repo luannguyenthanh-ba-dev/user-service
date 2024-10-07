@@ -11,39 +11,73 @@ import {
   MinLength,
 } from 'class-validator';
 import { Gender } from '../users.const';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterUserDto {
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
   @IsDefined()
   @IsNotEmpty()
   @IsString()
   firstName: string;
 
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
   @IsDefined()
   @IsNotEmpty()
   @IsString()
   lastName: string;
 
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
   @IsDefined()
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
   @IsOptional()
-  @IsPhoneNumber('VN')
+  @IsPhoneNumber()
   phone?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
   @IsString()
   @IsOptional()
   address?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
   @IsString()
   @IsOptional()
   birthday?: string;
 
+  @ApiProperty({
+    type: Number,
+    enum: Gender,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
 
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
   @IsString()
   @IsDefined()
   @IsNotEmpty()
@@ -54,6 +88,10 @@ export class RegisterUserDto {
   )
   password: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
   @IsString()
   @IsOptional()
   major?: string;

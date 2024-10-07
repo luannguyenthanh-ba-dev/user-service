@@ -13,7 +13,9 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dtos';
 import { UsersService } from '../users/users.service';
 import { comparePassword, res, UserStatus } from 'src/common/utils';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Authz')
 @Controller('v1/authz')
 export class AuthController {
   private logger = new Logger();
@@ -46,6 +48,7 @@ export class AuthController {
     return res(HttpStatus.CREATED, { access_token });
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post('introspections')
   async introspections(@User() user) {
