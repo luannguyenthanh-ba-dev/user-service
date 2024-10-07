@@ -44,7 +44,7 @@ export class UsersController {
     summary: 'Register User',
   })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.CREATED,
     description: 'Success!',
     type: Object,
   })

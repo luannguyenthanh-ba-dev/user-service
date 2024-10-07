@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dtos';
 import { UsersService } from '../users/users.service';
 import { comparePassword, res, UserStatus } from 'src/common/utils';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Authz')
 @Controller('v1/authz')
@@ -24,6 +24,11 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Success!',
+    type: Object,
+  })
   @Post('login')
   async login(@Body() data: LoginDto) {
     const user = await this.usersService.findOne({

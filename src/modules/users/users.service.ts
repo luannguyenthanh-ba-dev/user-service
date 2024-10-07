@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Gender,
@@ -12,6 +12,8 @@ import { IVerificationsModel } from './interfaces/verifications.model';
 
 @Injectable()
 export class UsersService {
+  private logger: Logger = new Logger(UsersService.name);
+
   constructor(
     @InjectModel(USERS_SCHEMA_TOKEN)
     private readonly usersModel: Model<IUserModel>,

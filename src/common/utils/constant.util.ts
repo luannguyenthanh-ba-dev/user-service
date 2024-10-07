@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 export enum ROLES {
@@ -34,4 +36,21 @@ export interface IUserPayload {
   avatar?: string;
   isVerified?: boolean;
   isDeleted?: boolean;
+}
+
+export class Order {
+  @ApiProperty({
+    type: String,
+    required: false,
+    example: 'createdAt'
+  })
+  orderBy: string;
+
+  @ApiProperty({
+    type: String,
+    enum: ['asc', 'desc'],
+    required: false,
+    example: 'desc'
+  })
+  sort: 'asc' | 'desc';
 }
