@@ -8,7 +8,7 @@ import {
 import { Model, Types } from 'mongoose';
 import { IUserModel } from './interfaces/users.model.interface';
 import { IUserFilters } from './interfaces/users.interface';
-import { IVerificationsModel } from './interfaces/verifications.model';
+import { IVerificationsModel } from './interfaces/verifications.model.interface';
 
 @Injectable()
 export class UsersService {

@@ -17,13 +17,17 @@ import { res, ROLES } from 'src/common/utils';
 import { CreateNewClientDto, GetListClientsDto } from './dtos';
 import { CaptchaGuard } from '../auth/guards/captcha.guard';
 import { Auth } from '../auth/auth.decorator';
+import { DownloadLinksService } from '../download-links/download-links.service';
 
 @ApiTags('Clients')
 @Controller('v1/clients')
 export class ClientsController {
   private logger: Logger = new Logger(ClientsController.name);
 
-  constructor(private readonly clientsService: ClientsService) {}
+  constructor(
+    private readonly clientsService: ClientsService,
+    private readonly downloadLinksService: DownloadLinksService,
+  ) {}
 
   @ApiBearerAuth()
   @UseGuards(CaptchaGuard)
@@ -37,7 +41,7 @@ export class ClientsController {
     const existClient = await this.clientsService.findOne({
       email: data.email,
     });
-    let client: any;
+    let client;
     if (existClient) {
       this.logger.warn(`Already existed client: ${data.email}`);
       client = await this.clientsService.updateOne({ email: data.email }, data);
@@ -48,6 +52,26 @@ export class ClientsController {
     if (client) {
       // Create download link and send mail to client:
       // Create download link
+      const existDownloadLink = await this.downloadLinksService.findOne({
+        client: client._id,
+      });
+      let downloadLink;
+      // If existed download link -> remove the old link -> create new link = retry session!
+      this.logger.log(
+        `Handle create download link for client: ${client.email}`,
+      );
+      if (existDownloadLink) {
+        await this.downloadLinksService.deleteOne({ client: client._id });
+        downloadLink = await this.downloadLinksService.create({
+          client: client._id,
+        });
+      } else {
+        downloadLink = await this.downloadLinksService.create({
+          client: client._id,
+        });
+      }
+      //
+      return res(HttpStatus.CREATED, downloadLink);
       //
       // Send mail to client
       //
