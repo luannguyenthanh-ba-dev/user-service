@@ -22,12 +22,12 @@ export class DownloadController {
   private logger: Logger = new Logger(DownloadLinksService.name);
   constructor(private readonly downloadLinksService: DownloadLinksService) {}
 
-  // @ApiBearerAuth()
-  // @UseGuards(DownloadLinkGuard)
-  @Get(':client/:slug')
+  @UseGuards(DownloadLinkGuard)
+  @Get(':client/:slug/:token')
   async download(
     @Param('client') client: string,
     @Param('slug') slug: string,
+    @Param('token') token: string,
     @Res() res: Response,
   ) {
     // Process download here
@@ -52,7 +52,12 @@ export class DownloadController {
           reject({ success: false });
         });
       });
-      await promise;
+      const result: any = await promise;
+
+      // If downloaded successfully -> remove download link
+      if (result.success) {
+        this.downloadLinksService.deleteOne({ client, slug, token });
+      }
       res.status(HttpStatus.OK).end();
     } catch (error) {
       res

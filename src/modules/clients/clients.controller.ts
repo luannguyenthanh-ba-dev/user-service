@@ -18,6 +18,7 @@ import { CreateNewClientDto, GetListClientsDto } from './dtos';
 import { CaptchaGuard } from '../auth/guards/captcha.guard';
 import { Auth } from '../auth/auth.decorator';
 import { DownloadLinksService } from '../download-links/download-links.service';
+import { EmailsService } from '../emails/emails.service';
 
 @ApiTags('Clients')
 @Controller('v1/clients')
@@ -27,8 +28,14 @@ export class ClientsController {
   constructor(
     private readonly clientsService: ClientsService,
     private readonly downloadLinksService: DownloadLinksService,
+    private readonly emailsService: EmailsService,
   ) {}
 
+  /**
+   * This API is used for both feature new Client and retry Client!
+   * @param data
+   * @returns
+   */
   @ApiBearerAuth()
   @UseGuards(CaptchaGuard)
   @Post()
@@ -48,34 +55,42 @@ export class ClientsController {
     } else {
       client = await this.clientsService.create(data);
     }
+    //
+    // Create download link and send mail to client:
+    const existDownloadLink = await this.downloadLinksService.findOne({
+      client: client._id,
+    });
 
-    if (client) {
-      // Create download link and send mail to client:
-      // Create download link
-      const existDownloadLink = await this.downloadLinksService.findOne({
+    // Create download link
+    let downloadLink;
+    // If existed download link -> remove the old link -> create new link = retry session!
+    this.logger.log(`Handle create download link for client: ${client.email}`);
+    // Retry
+    if (existDownloadLink) {
+      // Retry after a minute
+      if (Math.floor(Date.now() / 1000) - existDownloadLink.createdAt <= 60) {
+        throw new NotAcceptableException(
+          'We can only create a download link one time per minute for this client',
+        );
+      }
+      // After a minute -> delete old download link
+      await this.downloadLinksService.deleteOne({ client: client._id });
+      // Create new download link
+      downloadLink = await this.downloadLinksService.create({
         client: client._id,
       });
-      let downloadLink;
-      // If existed download link -> remove the old link -> create new link = retry session!
-      this.logger.log(
-        `Handle create download link for client: ${client.email}`,
-      );
-      if (existDownloadLink) {
-        await this.downloadLinksService.deleteOne({ client: client._id });
-        downloadLink = await this.downloadLinksService.create({
-          client: client._id,
-        });
-      } else {
-        downloadLink = await this.downloadLinksService.create({
-          client: client._id,
-        });
-      }
-      //
-      return res(HttpStatus.CREATED, downloadLink);
-      //
-      // Send mail to client
-      //
+    } else {
+      // First register
+      downloadLink = await this.downloadLinksService.create({
+        client: client._id,
+      });
     }
+    //
+    // Send mail to client
+    //
+    this.logger.log(`Handle send download email for client: ${client.email}`);
+    this.emailsService.sendEmailDownload(client, downloadLink.link);
+
     return res(HttpStatus.CREATED, { success: true });
   }
 

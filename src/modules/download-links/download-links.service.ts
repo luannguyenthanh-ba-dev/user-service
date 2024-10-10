@@ -24,12 +24,13 @@ export class DownloadLinksService {
   async create(data: { client: Types.ObjectId | string }) {
     try {
       const slug = uuidv4();
-      const link = `${this.downloadServiceUrl}/${data.client}/${slug}`;
+      const token = SHA256(slug + data.client);
+      const link = `${this.downloadServiceUrl}/${data.client}/${slug}/${token}`;
       const result = await this.downloadLinksModel.create({
         slug,
         client: data.client,
         link,
-        token: SHA256(slug + data.client),
+        token,
       });
       return result;
     } catch (error) {

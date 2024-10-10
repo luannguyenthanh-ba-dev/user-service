@@ -7,7 +7,7 @@ export class DownloadLinkGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers['authorization'];
+    const token = request.params['token'];
     const client = request.params['client'];
     const slug = request.params['slug'];
     // TODO: Handle download Token
