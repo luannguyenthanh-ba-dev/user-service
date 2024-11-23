@@ -13,11 +13,11 @@ async function bootstrap() {
     logger.debug(`./environments/${environment}.env`);
     dotenv.config({ path: `./environments/${environment}.env` });
   } catch (error) {
-    logger.error(`Init source met error with enviroment: ${error.message}`);
+    logger.error(`Init source met error with environment: ${error.message}`);
   }
 
   const config = new DocumentBuilder()
-    .setTitle('EZ AI APIs')
+    .setTitle('Users Service APIs')
     .setDescription('APIs Document')
     .setVersion('1.0')
     .addBearerAuth({
@@ -35,6 +35,7 @@ async function bootstrap() {
   const PORT = process.env.PORT || 3000;
   // Use this pipe for handle validation input error at DTO - If not have custom pipe
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({});
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);

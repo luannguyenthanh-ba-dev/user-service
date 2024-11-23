@@ -1,13 +1,7 @@
 import * as mongoose from 'mongoose';
-import { CLIENTS_SCHEMA_TOKEN } from 'src/modules/clients/clients.const';
-import { v4 as uuidv4 } from 'uuid';
 
 export const EmailsDownloadSchema = new mongoose.Schema({
-  client: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: CLIENTS_SCHEMA_TOKEN,
-  },
+  client: String,
 
   link: {
     required: true,

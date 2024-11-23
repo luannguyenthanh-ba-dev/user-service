@@ -31,6 +31,7 @@ import { Auth, User } from '../auth/auth.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -71,6 +72,14 @@ export class UsersController {
     return res(HttpStatus.CREATED, verifyCode);
   }
 
+  @ApiOperation({
+    summary: 'Renew verification code',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Success!',
+    type: Object,
+  })
   @Post('verifications/renews')
   async renewVerifyCode(@Body() data: RenewVerifyCodeDto) {
     const user = await this.usersService.findOne({
@@ -80,7 +89,7 @@ export class UsersController {
     });
 
     if (!user) {
-      throw new NotFoundException('ERROR: Not found unverify user!');
+      throw new NotFoundException('ERROR: Not found non-verify user!');
     }
 
     const verifyCode = await this.usersService.generateVerifyCode({
@@ -91,6 +100,14 @@ export class UsersController {
     return res(HttpStatus.CREATED, verifyCode);
   }
 
+  @ApiOperation({
+    summary: 'Verify User',
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Success!',
+    type: Object,
+  })
   @Post('verifications')
   async verify(@Body() data: VerifyAccountDto) {
     const [user, verifyCode] = await Promise.all([
@@ -106,7 +123,7 @@ export class UsersController {
     ]);
 
     if (!user) {
-      throw new NotFoundException('ERROR: Not found unverify user!');
+      throw new NotFoundException('ERROR: Not found non-verify user!');
     }
 
     if (!verifyCode) {
@@ -127,6 +144,14 @@ export class UsersController {
     return res(HttpStatus.CREATED, { status: 'Success' });
   }
 
+  @ApiOperation({
+    summary: 'Get user profile',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success!',
+    type: Object,
+  })
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('profiles')
@@ -134,6 +159,14 @@ export class UsersController {
     return res(HttpStatus.OK, user);
   }
 
+  @ApiOperation({
+    summary: 'Get list users',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success!',
+    type: Object,
+  })
   @ApiBearerAuth()
   @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
   /**
@@ -150,6 +183,14 @@ export class UsersController {
     return res(HttpStatus.OK, users);
   }
 
+  @ApiOperation({
+    summary: 'Update user info',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success!',
+    type: Object,
+  })
   @ApiBearerAuth()
   @Auth(ROLES.USER, ROLES.ADMIN, ROLES.SUPER_ADMIN)
   @Put('infos/:_id')
@@ -180,6 +221,18 @@ export class UsersController {
     return res(HttpStatus.OK, updated);
   }
 
+  @ApiOperation({
+    summary: 'Change user status',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success!',
+    type: Object,
+  })
+  @ApiParam({
+    name: '_id',
+    type: String,
+  })
   @ApiBearerAuth()
   @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
   @Put('status/:_id')
@@ -198,13 +251,13 @@ export class UsersController {
       data.status === UserStatus.BLOCKED &&
       existUser.status === UserStatus.BLOCKED
     ) {
-      throw new NotImplementedException('ERORR: User was blocked!');
+      throw new NotImplementedException('ERROR: User was blocked!');
     }
     if (
       data.status === UserStatus.ACTIVE &&
       existUser.status === UserStatus.ACTIVE
     ) {
-      throw new NotImplementedException('ERROR: User already actived!');
+      throw new NotImplementedException('ERROR: User already activated!');
     }
 
     const blocked = await this.usersService.updateOne(
@@ -214,6 +267,18 @@ export class UsersController {
     return res(HttpStatus.OK, blocked);
   }
 
+  @ApiOperation({
+    summary: 'Delete user',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Success!',
+    type: Object,
+  })
+  @ApiParam({
+    name: '_id',
+    type: String,
+  })
   @ApiBearerAuth()
   @Auth(ROLES.SUPER_ADMIN)
   @Delete(':_id')

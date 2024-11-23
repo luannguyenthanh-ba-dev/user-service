@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export interface IDownloadEmailInput {
-  client: Types.ObjectId | string;
+  client: string;
 
   link: string;
 }
@@ -9,7 +9,7 @@ export interface IDownloadEmailInput {
 export interface IDownloadEmailFilters {
   _id?: Types.ObjectId | string;
 
-  client?: Types.ObjectId | string;
+  client?: string;
 
   link?: string;
 
