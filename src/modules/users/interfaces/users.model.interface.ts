@@ -20,7 +20,7 @@ export interface IUserModel extends Document {
     waist?: number;
     hips?: number;
   }>;
-  readonly role: ROLES;
+  readonly role: ROLES[];
   readonly gender?: Gender;
   readonly status?: UserStatus;
   readonly password?: string;

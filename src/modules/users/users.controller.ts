@@ -25,9 +25,15 @@ import {
   UpdateUserDto,
   VerifyAccountDto,
 } from './dtos';
-import { IUserPayload, res, ROLES, UserStatus } from 'src/common/utils';
+import {
+  CanManageObjects,
+  IUserPayload,
+  res,
+  ROLES,
+  UserStatus,
+} from 'src/common/utils';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { Auth, User } from '../auth/auth.decorator';
+import { AnyUser, Auth, User } from '../auth/auth.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -35,6 +41,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Users')
 @Controller('v1/users')
@@ -192,18 +199,16 @@ export class UsersController {
     type: Object,
   })
   @ApiBearerAuth()
-  @Auth(ROLES.USER, ROLES.ADMIN, ROLES.SUPER_ADMIN)
+  @AnyUser()
+  @UseGuards(AuthGuard)
   @Put('infos/:_id')
   async updateUser(
     @Param('_id') _id: string,
     @Body() data: UpdateUserDto,
     @User() user: IUserPayload,
   ) {
-    if (
-      user.role !== ROLES.ADMIN &&
-      user.role !== ROLES.SUPER_ADMIN &&
-      _id !== user._id
-    ) {
+    // Verify project owner
+    if (!CanManageObjects(user, { ownerId: _id })) {
       throw new ForbiddenException(
         'ERROR: Not have permission to update this user info!',
       );
@@ -235,6 +240,7 @@ export class UsersController {
   })
   @ApiBearerAuth()
   @Auth(ROLES.ADMIN, ROLES.SUPER_ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @Put('status/:_id')
   async changeUserStatus(
     @Param('_id') _id: string,
@@ -281,6 +287,7 @@ export class UsersController {
   })
   @ApiBearerAuth()
   @Auth(ROLES.SUPER_ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @Delete(':_id')
   async deleteUser(@Param('_id') _id: string) {
     const existUser = await this.usersService.findOne({

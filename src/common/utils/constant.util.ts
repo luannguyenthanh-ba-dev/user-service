@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 export enum ROLES {
@@ -7,7 +6,6 @@ export enum ROLES {
   ADMIN = 'admin',
   USER = 'user',
   VENDOR = 'vendor',
-  PARTNER = 'partner',
 }
 
 export enum UserStatus {
@@ -28,7 +26,7 @@ export interface IUserPayload {
   height?: number;
   weight?: number;
   threeRounds?: object;
-  role?: string;
+  role?: string[];
   gender?: number;
   status?: string;
   major?: string;
@@ -42,7 +40,7 @@ export class Order {
   @ApiProperty({
     type: String,
     required: false,
-    example: 'createdAt'
+    example: 'createdAt',
   })
   orderBy: string;
 
@@ -50,7 +48,19 @@ export class Order {
     type: String,
     enum: ['asc', 'desc'],
     required: false,
-    example: 'desc'
+    example: 'desc',
   })
   sort: 'asc' | 'desc';
 }
+
+export const CanManageObjects = (user: IUserPayload, object: any): boolean => {
+  if (
+    user.role.includes(ROLES.SUPER_ADMIN) ||
+    user.role.includes(ROLES.ADMIN)
+  ) {
+    return true;
+  }
+  if (user.role.includes(ROLES.VENDOR) || user.role.includes(ROLES.USER)) {
+    return object.ownerId === user._id;
+  }
+};

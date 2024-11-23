@@ -29,8 +29,8 @@ export const UsersSchema = new mongoose.Schema(
     },
     role: {
       required: true,
-      type: String,
-      default: ROLES.USER,
+      type: [String],
+      default: [ROLES.USER],
     },
     gender: {
       type: Number,
