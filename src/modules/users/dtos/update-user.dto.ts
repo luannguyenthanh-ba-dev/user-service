@@ -1,22 +1,21 @@
 import {
+  IsArray,
   IsDefined,
-  IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
+  IsObject,
   IsOptional,
   IsPhoneNumber,
   IsString,
-  Matches,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
 import { Gender } from '../users.const';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RegisterUserDto {
+export class UpdateUserDto {
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
   })
   @IsDefined()
   @IsNotEmpty()
@@ -25,7 +24,7 @@ export class RegisterUserDto {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
   })
   @IsDefined()
   @IsNotEmpty()
@@ -34,19 +33,10 @@ export class RegisterUserDto {
 
   @ApiProperty({
     type: String,
-    required: true,
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({
-    type: String,
     required: false,
   })
   @IsOptional()
-  @IsPhoneNumber()
+  @IsPhoneNumber('VN')
   phone?: string;
 
   @ApiProperty({
@@ -67,26 +57,45 @@ export class RegisterUserDto {
 
   @ApiProperty({
     type: Number,
-    enum: Gender,
     required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  height?: number;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  weight?: number;
+
+  @ApiProperty({
+    type: Object,
+    required: false,
+    example: {
+      bust: 90,
+      waist: 60,
+      hips: 90,
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  threeRounds?: {
+    bust?: number;
+    waist?: number;
+    hips?: number;
+  };
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    enum: Gender,
   })
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
-
-  @ApiProperty({
-    type: String,
-    required: true,
-  })
-  @IsString()
-  @IsDefined()
-  @IsNotEmpty()
-  @MaxLength(24)
-  @MinLength(8)
-  @Matches(
-    /^(?=.*[A-Z])(?=.*[a-z])(?=.*[a-zA-Z!#$%&? "])[a-zA-Z0-9!#@$%&?]{8,24}$/,
-  )
-  password: string;
 
   @ApiProperty({
     type: String,
@@ -95,4 +104,20 @@ export class RegisterUserDto {
   @IsString()
   @IsOptional()
   major?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  gallery?: string[];
 }
